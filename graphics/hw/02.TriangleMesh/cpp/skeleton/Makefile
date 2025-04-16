@@ -11,7 +11,7 @@
 #   pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-glfw
 #
 
-#CXX = g++
+CXX = g++
 #CXX = clang++
 
 EXE = mesh
@@ -26,6 +26,10 @@ LINUX_GL_LIBS = -lGL
 CXXFLAGS = -std=c++11 -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 CXXFLAGS += -g -Wall -Wformat
 LIBS = 
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -I/opt/homebrew/include
+LDFLAGS = -L/opt/homebrew/lib
+LIBS = -lGLEW -lglfw -framework OpenGL
 
 ##---------------------------------------------------------------------
 ## OPENGL ES
