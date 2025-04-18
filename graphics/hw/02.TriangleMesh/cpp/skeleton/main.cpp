@@ -220,19 +220,19 @@ void update_buffer_objects()
       g_color_data = cube::triangle_soup::color;
       g_position_size = sizeof(cube::triangle_soup::position);
       g_color_size = sizeof(cube::triangle_soup::color);
-      g_num_position = cube::triangle_soup::num_position;
+      g_num_position = g_position_size / sizeof(glm::vec3);
     } else if (g_mesh_model == kAvocado) {
       g_position_data = avocado::triangle_soup::position;
       g_color_data = avocado::triangle_soup::color;
       g_position_size = sizeof(avocado::triangle_soup::position);
       g_color_size = sizeof(avocado::triangle_soup::color);
-      g_num_position = avocado::triangle_soup::num_position;
+      g_num_position = g_position_size / sizeof(glm::vec3);
     } else if (g_mesh_model == kDonut) {
       g_position_data = donut::triangle_soup::position;
       g_color_data = donut::triangle_soup::color;
       g_position_size = sizeof(donut::triangle_soup::position);
       g_color_size = sizeof(donut::triangle_soup::color);
-      g_num_position = donut::triangle_soup::num_position;
+      g_num_position = g_position_size / sizeof(glm::vec3);
     }
 
     g_index_data = nullptr;
@@ -247,8 +247,7 @@ void update_buffer_objects()
     g_position_size = sizeof(cube::vlist_triangles::position);
     g_color_size    = sizeof(cube::vlist_triangles::color);
     g_index_size    = sizeof(cube::vlist_triangles::index);
-
-    g_num_position = sizeof(cube::vlist_triangles::position) / sizeof(glm::vec3);
+    g_num_position = g_position_size / sizeof(glm::vec3);
     g_num_index     = g_index_size / sizeof(unsigned int);
   }
   else if (g_mesh_model == kAvocado) {
@@ -259,8 +258,7 @@ void update_buffer_objects()
     g_position_size = sizeof(avocado::vlist_triangles::position);
     g_color_size    = sizeof(avocado::vlist_triangles::color);
     g_index_size    = sizeof(avocado::vlist_triangles::index);
-
-    g_num_position = sizeof(avocado::vlist_triangles::position) / sizeof(glm::vec3);
+    g_num_position = g_position_size / sizeof(glm::vec3);
     g_num_index     = g_index_size / sizeof(unsigned int);
   }
   else if (g_mesh_model == kDonut) {
@@ -271,13 +269,27 @@ void update_buffer_objects()
     g_position_size = sizeof(donut::vlist_triangles::position);
     g_color_size    = sizeof(donut::vlist_triangles::color);
     g_index_size    = sizeof(donut::vlist_triangles::index);
-
-    g_num_position = sizeof(donut::vlist_triangles::position) / sizeof(glm::vec3);
+    g_num_position = g_position_size / sizeof(glm::vec3);
     g_num_index     = g_index_size / sizeof(unsigned int);
   }
 }
 
   assert(g_position_size == g_color_size);
+
+
+  std::cout << "==============================" << std::endl;
+  std::cout << "[DEBUG] Model: ";
+  if (g_mesh_model == kCube) std::cout << "Cube";
+  else if (g_mesh_model == kAvocado) std::cout << "Avocado";
+  else if (g_mesh_model == kDonut) std::cout << "Donut";
+  std::cout << (g_mesh_type == kTriangleSoup ? " (TriangleSoup)" : " (VListTriangles)") << std::endl;
+
+  std::cout << "[DEBUG] g_position_size: " << g_position_size << std::endl;
+  std::cout << "[DEBUG] g_color_size:    " << g_color_size << std::endl;
+  std::cout << "[DEBUG] g_num_position:  " << g_num_position << std::endl;
+  std::cout << "[DEBUG] g_num_index:     " << g_num_index << std::endl;
+  std::cout << "==============================" << std::endl;
+
 
   glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
   glBufferData(GL_ARRAY_BUFFER, g_position_size, g_position_data, GL_STATIC_DRAW);
