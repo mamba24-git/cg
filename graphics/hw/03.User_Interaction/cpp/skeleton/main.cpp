@@ -1,4 +1,4 @@
-﻿///// main.cpp
+///// main.cpp
 ///// OpenGL 3+, GLSL 1.20, GLEW, GLFW3
 
 #include <GL/glew.h>
@@ -132,6 +132,9 @@ void compose_imgui_frame()
 
     // TODO
     ImGui::SliderFloat("translate", &g_vec_model_translate[0], -3.0f, 3.0f);
+    
+    ImGui::SliderFloat3("Scale", &g_vec_model_scale[0], 0.1f, 3.0f);
+    ImGui::gizmo3D("Rotation", g_quat_model_rotation);
 
     ImGui::End();
   }
@@ -183,10 +186,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     g_vec_model_translate[0] += 0.1f;
   
   // TODO
-
+    
   // scale
   if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
     g_vec_model_scale += 0.1f;
+  if (key == GLFW_KEY_H && action == GLFW_PRESS) 
+    g_vec_model_translate.x -= 0.1f;
+  if (key == GLFW_KEY_L && action == GLFW_PRESS) 
+    g_vec_model_translate.x += 0.1f;
+  if (key == GLFW_KEY_K && action == GLFW_PRESS) 
+    g_vec_model_translate.y += 0.1f;
+  if (key == GLFW_KEY_J && action == GLFW_PRESS) 
+    g_vec_model_translate.y -= 0.1f;
+  if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) 
+    g_vec_model_scale *= 1.1f;
+  if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) 
+    g_vec_model_scale /= 1.1f;
+
   
   // TODO
 }
@@ -314,7 +330,9 @@ void set_transform()
   g_mat_proj = glm::perspective(glm::radians(g_fovy), g_aspect, 0.001f, 1000.f);
   
   // TODO: erase the following line and write your codes to properly set g_mat_model as T*R*S
-  g_mat_model = glm::translate(g_vec_model_translate);
+  g_mat_model = glm::translate(glm::mat4(1.0f), g_vec_model_translate) *
+              glm::mat4_cast(g_quat_model_rotation) *
+              glm::scale(glm::mat4(1.0f), g_vec_model_scale);
 }
 
 
@@ -360,6 +378,7 @@ void init_scene()
 
   // TODO: initialize quaternion for model rotation
   // g_quat_model_rotation = ...
+  g_quat_model_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
   g_fovy = 60.0f;
   g_aspect = 1.0f;
