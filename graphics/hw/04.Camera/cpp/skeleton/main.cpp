@@ -1,4 +1,4 @@
-﻿///// main.cpp
+///// main.cpp
 ///// OpenGL 3+, GLSL 1.20, GLEW, GLFW3
 
 #include <GL/glew.h>
@@ -161,12 +161,19 @@ void compose_imgui_frame()
       float fovy = g_camera.fovy();
       ImGui::SliderFloat("fovy (deg)", &fovy, 10.f, 160.f);
       // TODO: set camera fovy
+      g_camera.set_fovy(fovy);
+
+      float ortho_scale = g_camera.ortho_scale();
+      ImGui::SliderFloat("ortho zoom", &ortho_scale, 0.1f, 10.f);
+      // TODO: set camera ortho_scale
+      g_camera.set_ortho_scale(ortho_scale);
     }
     else
     {
       float ortho_scale = g_camera.ortho_scale();
       ImGui::SliderFloat("ortho zoom", &ortho_scale, 0.1f, 10.f);
       // TODO: set camera ortho_scale
+      g_camera.set_ortho_scale(ortho_scale);
     }
     ImGui::NewLine();
 
@@ -175,9 +182,11 @@ void compose_imgui_frame()
     // TODO
     glm::quat   quat_cam;
     glm::vec3   vec_cam_pos;
+    g_camera.get_pose(quat_cam, vec_cam_pos);
 
     ImGui::SliderFloat3("Tranlsate", glm::value_ptr(vec_cam_pos), -10.0f, 10.0f);
     ImGui::gizmo3D("Rotation", quat_cam);
+    g_camera.set_pose(quat_cam, vec_cam_pos);
 
     ImGui::End();
   }
@@ -241,6 +250,20 @@ void compose_imgui_frame()
 void scroll_callback(GLFWwindow* window, double x, double y)
 {
   // TODO
+  // if ()
+  if (g_camera.mode() == Camera::kOrtho)
+  {
+    float ortho_scale = g_camera.ortho_scale();
+    ortho_scale *= (y > 0) ? 0.9f : 1.1f;
+    g_camera.set_ortho_scale(ortho_scale);
+  }
+  else
+  {
+    float fovy = g_camera.fovy();
+    fovy *= (y > 0) ? 0.9f : 1.1f;
+    fovy = glm::clamp(fovy, 10.0f, 160.0f);
+    g_camera.set_fovy(fovy);
+  }
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -265,6 +288,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     g_vec_model_scale -= 0.1f;
 
   // TODO: update camera extrinsic parameter with key-inputs
+  // camera move left
+  if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    g_camera.move_left(0.1f);
+  // camera move right
+  if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    g_camera.move_right(0.1f);
+  // camera move up
+  if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    g_camera.move_up(0.1f);
+  // camera move down
+  if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    g_camera.move_down(0.1f);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -482,7 +517,7 @@ int main(void)
   glfwSetKeyCallback(window, key_callback);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   // TODO: register scroll_callback function
-
+  glfwSetScrollCallback(window, scroll_callback);
 
   init_scene();
 
