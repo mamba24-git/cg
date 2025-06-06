@@ -53,6 +53,9 @@ private:
     GLuint  color_buffer;    // GPU 메모리에서 color_buffer 위치
     bool    is_color = false;
 
+    GLuint index_buffer; 
+    GLuint num_indices_;
+
     std::vector<Face>   faces;
     const aiMesh*       pmesh_;
     std::string         name_;
