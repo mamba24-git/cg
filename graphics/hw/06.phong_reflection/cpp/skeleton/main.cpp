@@ -1,4 +1,4 @@
-﻿///// main.cpp
+///// main.cpp
 ///// OpenGL 3+, GLSL 1.20, GLEW, GLFW3
 
 #include <GL/glew.h>
@@ -544,6 +544,25 @@ void init_shader_program()
 
   // TODO: get locations of the GPU uniform/attribute variables 
   //       for implementing Phong reflection model
+  loc_u_PVM = glGetUniformLocation(program, "u_PVM");
+
+  loc_a_position = glGetAttribLocation(program, "a_position");
+  loc_a_color    = glGetAttribLocation(program, "a_color");
+  loc_a_normal   = glGetAttribLocation(program, "a_normal");
+
+  // Phong reflection용 유니폼
+  loc_u_view_matrix      = glGetUniformLocation(program, "u_view_matrix");
+  loc_u_model_matrix     = glGetUniformLocation(program, "u_model_matrix");
+  loc_u_normal_matrix    = glGetUniformLocation(program, "u_normal_matrix");
+  loc_u_camera_position  = glGetUniformLocation(program, "u_camera_position");
+  loc_u_light_position   = glGetUniformLocation(program, "u_light_position");
+  loc_u_light_ambient    = glGetUniformLocation(program, "u_light_ambient");
+  loc_u_light_diffuse    = glGetUniformLocation(program, "u_light_diffuse");
+  loc_u_light_specular   = glGetUniformLocation(program, "u_light_specular");
+  loc_u_obj_ambient      = glGetUniformLocation(program, "u_obj_ambient");
+  loc_u_obj_diffuse      = glGetUniformLocation(program, "u_obj_diffuse");
+  loc_u_obj_specular     = glGetUniformLocation(program, "u_obj_specular");
+  loc_u_obj_shininess    = glGetUniformLocation(program, "u_obj_shininess");
 
 }
 
@@ -554,12 +573,20 @@ void render_object()
   // set transform
   glm::mat4 mat_view = camera.get_view_matrix();
   glm::mat4 mat_proj = camera.get_projection_matrix();
+  glm::vec3 camera_position = camera.position();
 
 
   // 특정 쉐이더 프로그램 사용
   glUseProgram(program);
 
   // TODO : send uniform for camera & light to GPU
+  glUniformMatrix4fv(loc_u_view_matrix, 1, GL_FALSE, glm::value_ptr(mat_view));
+  glUniform3fv(loc_u_camera_position, 1, glm::value_ptr(camera_position));
+  glUniform3fv(loc_u_light_position, 1, glm::value_ptr(g_light.pos));
+  glUniform3fv(loc_u_light_ambient, 1, glm::value_ptr(g_light.ambient));
+  glUniform3fv(loc_u_light_diffuse, 1, glm::value_ptr(g_light.diffuse));
+  glUniform3fv(loc_u_light_specular, 1, glm::value_ptr(g_light.specular));
+
 
   for (std::size_t i = 0; i < g_models.size(); ++i)
   {
@@ -567,8 +594,24 @@ void render_object()
 
     // TODO : set mat_model, mat_normal, mat_PVM 
     // TODO : send uniform data for model to GPU
+    glm::mat4 mat_model = model.get_model_matrix();
+    glm::mat3 mat_normal = glm::transpose(glm::inverse(glm::mat3(mat_model)));
+    glm::mat4 mat_PVM = mat_proj * mat_view * mat_model;
+
+    glUniformMatrix4fv(loc_u_model_matrix, 1, GL_FALSE, glm::value_ptr(mat_model));
+    glUniformMatrix3fv(loc_u_normal_matrix, 1, GL_FALSE, glm::value_ptr(mat_normal));
+    glUniformMatrix4fv(loc_u_PVM, 1, GL_FALSE, glm::value_ptr(mat_PVM));
     
-    model.draw(loc_a_position, loc_a_normal, loc_u_obj_ambient, loc_u_obj_diffuse, loc_u_obj_specular, loc_u_obj_shininess);
+    
+    for (std::size_t j = 0; j < model.meshes.size(); ++j) {
+      const Mesh& mesh = model.meshes[j];
+      const Material& mat = mesh.material;
+      glUniform3fv(loc_u_obj_ambient, 1, glm::value_ptr(mat.ambient));
+      glUniform3fv(loc_u_obj_diffuse, 1, glm::value_ptr(mat.diffuse));
+      glUniform3fv(loc_u_obj_specular, 1, glm::value_ptr(mat.specular));
+      glUniform1f (loc_u_obj_shininess, mat.shininess);
+      mesh.draw(loc_a_position, loc_a_normal);
+    }
   }
 
   // 쉐이더 프로그램 사용해제
