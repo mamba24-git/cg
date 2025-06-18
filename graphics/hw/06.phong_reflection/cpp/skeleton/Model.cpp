@@ -47,8 +47,8 @@ bool Model::load_model(const std::string& _path)
         Mesh mesh;
         mesh = Mesh(scene->mMeshes[i]);
         
-        mesh.update_tv_indices();
         mesh.gen_gl_buffers();
+        mesh.update_tv_indices();
         mesh.set_gl_buffers(shading_type);
 
         int mat_idx = scene->mMeshes[i]->mMaterialIndex;    
